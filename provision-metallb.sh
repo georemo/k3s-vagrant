@@ -2,7 +2,7 @@
 set -euo pipefail
 
 metallb_chart_version="${1:-4.1.13}"; shift || true
-lb_ip_range="${1:-10.11.0.50-10.11.0.250}"; shift || true
+lb_ip_range="${1:-192.168.1.50-192.168.1.250}"; shift || true
 
 # add the bitnami helm charts repository.
 helm repo add bitnami https://charts.bitnami.com/bitnami

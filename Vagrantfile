@@ -2,6 +2,7 @@
 # have to force a --no-parallel execution.
 ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
+
 require 'ipaddr'
 
 def get_or_generate_k3s_token
@@ -57,10 +58,10 @@ number_of_server_nodes  = 3
 number_of_agent_nodes   = 2
 
 server_fqdn           = 's.example.test'
-server_vip            = '10.11.0.10'
-first_server_node_ip  = '10.11.0.11'
-first_agent_node_ip   = '10.11.0.21'
-lb_ip_range           = '10.11.0.50-10.11.0.250'
+server_vip            = '192.168.1.10'
+first_server_node_ip  = '192.168.1.11'
+first_agent_node_ip   = '192.168.1.21'
+lb_ip_range           = '192.168.1.50-192.168.1.250'
 
 server_nodes  = generate_nodes(first_server_node_ip, number_of_server_nodes, 's')
 agent_nodes   = generate_nodes(first_agent_node_ip, number_of_agent_nodes, 'a')
@@ -72,7 +73,9 @@ extra_hosts = """
 """
 
 Vagrant.configure(2) do |config|
-  config.vm.box = 'debian-11-amd64'
+  # config.vm.box = 'debian-11-amd64'
+  config.vm.box = 'bento/ubuntu-22.04'
+  config.vm.network "public_network", bridge: "wlp2s0: Wi-Fi (AirPort)", auto_config: true
 
   config.vm.provider 'libvirt' do |lv, config|
     lv.cpus = 2
@@ -90,13 +93,14 @@ Vagrant.configure(2) do |config|
   server_nodes.each do |name, fqdn, ip_address, n|
     config.vm.define name do |config|
       config.vm.provider 'libvirt' do |lv, config|
-        lv.memory = 2*1024
+        lv.memory = 4*1024
       end
       config.vm.provider 'virtualbox' do |vb|
-        vb.memory = 2*1024
+        vb.memory = 4*1024
       end
       config.vm.hostname = fqdn
-      config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
+      # config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
+      config.vm.network :public_network, ip: ip_address
       config.vm.provision 'shell', path: 'provision-base.sh', args: [extra_hosts]
       config.vm.provision 'shell', path: 'provision-wireguard.sh'
       config.vm.provision 'shell', path: 'provision-etcdctl.sh', args: [etcdctl_version]
@@ -124,13 +128,14 @@ Vagrant.configure(2) do |config|
   agent_nodes.each do |name, fqdn, ip_address, n|
     config.vm.define name do |config|
       config.vm.provider 'libvirt' do |lv, config|
-        lv.memory = 2*1024
+        lv.memory = 4*1024
       end
       config.vm.provider 'virtualbox' do |vb|
-        vb.memory = 2*1024
+        vb.memory = 4*1024
       end
       config.vm.hostname = fqdn
-      config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
+      # config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'none', libvirt__dhcp_enabled: false
+      config.vm.network :public_network, ip: ip_address
       config.vm.provision 'shell', path: 'provision-base.sh', args: [extra_hosts]
       config.vm.provision 'shell', path: 'provision-wireguard.sh'
       config.vm.provision 'shell', path: 'provision-k3s-agent.sh', args: [
