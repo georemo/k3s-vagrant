@@ -1,8 +1,31 @@
 # About
 
 This is a [k3s](https://github.com/k3s-io/k3s) kubernetes cluster playground wrapped in a Vagrant environment.
+This particular repo is forked and modified from https://github.com/rgl/k3s-vagrant
+
+
+
+# Environment
 
 **NB** The `vxlan` flannel backend [seems to be broken in Debian 11](https://github.com/k3s-io/k3s/issues/3863).
+
+Configure your hosts file with:
+
+```
+192.168.1.10 s.example.test
+192.168.1.50 traefik.example.test
+192.168.1.50 kubernetes-dashboard.example.test
+```
+
+Original project advise:
+Install the base [Debian 11 (Bullseye) vagrant box](https://github.com/rgl/debian-vagrant).
+
+Optionally, start the [rgl/gitlab-vagrant](https://github.com/rgl/gitlab-vagrant) environment at `../gitlab-vagrant`. If you do this, this environment will have the [gitlab-runner helm chart](https://docs.gitlab.com/runner/install/kubernetes.html) installed in the k8s cluster.
+
+However this particular project relied on the box,'bento/ubuntu-22.04'. So, install kvm as per:
+https://linuxhint.com/install-kvm-ubuntu-22-04/
+
+Also have a working virtualbox environment. 
 
 # Usage
 
@@ -14,19 +37,16 @@ Configure your hosts file with:
 192.168.1.50 kubernetes-dashboard.example.test
 ```
 
-Install the base [Debian 11 (Bullseye) vagrant box](https://github.com/rgl/debian-vagrant).
-
-Optionally, start the [rgl/gitlab-vagrant](https://github.com/rgl/gitlab-vagrant) environment at `../gitlab-vagrant`. If you do this, this environment will have the [gitlab-runner helm chart](https://docs.gitlab.com/runner/install/kubernetes.html) installed in the k8s cluster.
 
 Launch the environment:
 
 ```bash
-time vagrant up --no-destroy-on-error --no-tty --provider=libvirt # or --provider=virtualbox
+time vagrant up --no-destroy-on-error --no-tty --provider=virtualbox
 ```
 
 **NB** The server nodes (e.g. `s1`) are [tainted](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to prevent them from executing non control-plane workloads. That kind of workload is executed in the agent nodes (e.g. `a1`).
 
-Access the cluster from the host:
+To access the cluster from the host, run below at the root of the project folder.
 
 ```bash
 export KUBECONFIG=$PWD/tmp/admin.conf
